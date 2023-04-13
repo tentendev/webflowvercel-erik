@@ -1,9 +1,9 @@
 {
-  "name": "dorian",
+  "name": "WebflowVercel",
   "version": "1.0.0",
   "main": "index.js",
-  "author": "Kennedy Rose <kennedyianrose@gmail.com>",
-  "license": "PURCHASE AT cryolayer.com",
+  "author": "Tenten Dev <dev@tenten.co>",
+  "license": "Tenten",
   "private": true,
   "scripts": {
     "build": "yarn run clean && cd packages/orchestration && BCP=1 dotenv -e ../../.env -- npm run build",
