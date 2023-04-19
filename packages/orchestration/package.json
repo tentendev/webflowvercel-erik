@@ -12,7 +12,8 @@
     "@app/webflow-plugin": "^1.0.0",
     "cheerio": "^1.0.0-rc.10",
     "fs-extra": "^10.0.0",
-    "globby": "^11.0.4"
+    "globby": "^11.0.4",
+    "sitemap-stream-parser": "^1.7.0"
   },
   "devDependencies": {
     "del-cli": "^4.0.0",
