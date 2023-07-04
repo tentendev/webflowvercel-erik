@@ -14,13 +14,13 @@ To do this, you can create a `.env` file with the contents of `.env.template`. a
 Then run:
 
 ```bash
-yarn build
+npm run build
 ```
 
 It should output the files to the `public` folder in the project root. You can test the site out locally by running:
 
 ```bash
-yarn serve
+npm run serve
 ```
 
 # Excluding pages from the sitemap
