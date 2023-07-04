@@ -6,16 +6,11 @@
   "license": "Tenten",
   "private": true,
   "scripts": {
-    "build": "yarn run clean && cd packages/orchestration && BCP=1 dotenv -e ../../.env -- npm run build",
+    "build": "npm run clean && cd packages/orchestration && BCP=1 dotenv -e ../../.env -- npm run build",
     "clean": "del public",
     "serve": "serve public",
     "stop": "sudo killall -9 node",
     "version": "lerna version"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "lint-staged": {
     "**/*.js": [
@@ -33,8 +28,7 @@
     "del-cli": "^4.0.0",
     "dotenv-cli": "^4.0.0",
     "eslint": "^7.30.0",
-    "husky": "^4.2.0",
-    "lerna": "^3.22.1",
+    "lerna": "^7.1.1",
     "lint-staged": "^11.0.0",
     "netlify-plugin-image-optim": "^0.4.0",
     "netlify-plugin-inline-critical-css": "^1.2.0",

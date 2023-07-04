@@ -8,9 +8,8 @@ module.exports = function addToQueue(url, from){
 	if(url.indexOf(`//`) === 0){
 		url = `${this.protocol}:${url}`
 	}
-	if(isRelative(url)){
-// 		url = resolve(from, url)
-		url = process.env.WEBFLOW_URL
+	if(isRelative(url) && from){
+		url = resolve(from, url)
 	}
 	if(url.indexOf(`https://`) !== 0 && url.indexOf(`http://`) !== 0){
 		return
