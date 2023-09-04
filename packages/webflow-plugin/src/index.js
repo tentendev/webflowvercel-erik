@@ -260,13 +260,21 @@ module.exports = function webflowPlugin(){
 					xmlMode: true,
 				})
 				$(`url`).each((_, el) => {
-					const $url = $(el)
-					const loc = $url.find(`loc`)
-					const url = loc.text().trim()
-					if(excludeFromSitemap.indexOf(url) > -1){
-						$url.remove()
+					const $url = $(el);
+					const loc = $url.find(`loc`);
+					const link = $url.find(`xhtml:link`);
+					// Sept. 4, 2023: Update Sitemap URL
+					let url = loc.text().trim(); // Use let instead of const
+					// REPLACE WEBFLOW URL WITH Official URL
+					url = url.replace(process.env.WEBFLOW_URL, process.env.URL);
+					
+					if (excludeFromSitemap.indexOf(url) > -1) {
+					  $url.remove();
 					}
-				})
+					// Update both the <loc> content and the href attribute
+					loc.text(url);
+					link.attr('href', url);
+				});
 				const newXml = $.xml()
 				console.log(`Writing new Sitemap...`)
 				await outputFile(xmlPath, newXml)
