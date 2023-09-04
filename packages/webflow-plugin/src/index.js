@@ -262,7 +262,7 @@ module.exports = function webflowPlugin(){
 				$(`url`).each((_, el) => {
 					const $url = $(el);
 					const loc = $url.find(`loc`);
-					const link = $url.find(`xhtml:link`);
+					const link = $url.find(`xhtml\\:link`);
 					// Sept. 4, 2023: Update Sitemap URL
 					let url = loc.text().trim(); // Use let instead of const
 					// REPLACE WEBFLOW URL WITH Official URL
