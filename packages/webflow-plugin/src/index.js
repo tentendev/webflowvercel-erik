@@ -237,7 +237,7 @@ module.exports = function webflowPlugin(){
 
 				// Create webp images
 				console.log(`Creating webp images...`)
-				const images = await globby(`${dist}/**/*.{jpg,jpeg,png,gif,JPG,JPEG,PNG,GIF}`)
+				const images = await globby(`${dist}/**/*.{jpg,jpeg,png,gif}`)
 				for(let file of images){
 					const newPath = file + `.webp`
 					await webp.cwebp(file, newPath, `-q 90`)
@@ -265,15 +265,21 @@ module.exports = function webflowPlugin(){
 					const link = $url.find(`xhtml\\:link`);
 					// Sept. 4, 2023: Update Sitemap URL
 					let url = loc.text().trim(); // Use let instead of const
-					// REPLACE WEBFLOW URL WITH Official URL
-					url = url.replace(process.env.WEBFLOW_URL, process.env.URL);
-					
-					if (excludeFromSitemap.indexOf(url) > -1) {
-					  $url.remove();
+					// Force update for the first item
+					if ($url.index() === 0) {
+						// Update both the <loc> content and the href attribute directly
+						loc.text(process.env.URL);
+						link.attr('href', process.env.URL);
+					} else {
+						// REPLACE WEBFLOW URL WITH Official URL
+						url = url.replace(process.env.WEBFLOW_URL, process.env.URL);
+						if (excludeFromSitemap.indexOf(url) > -1) {
+							$url.remove();
+						}
+						// Update both the <loc> content and the href attribute
+						loc.text(url);
+						link.attr('href', url);
 					}
-					// Update both the <loc> content and the href attribute
-					loc.text(url);
-					link.attr('href', url);
 				});
 				const newXml = $.xml()
 				console.log(`Writing new Sitemap...`)
@@ -300,4 +306,3 @@ module.exports = function webflowPlugin(){
 		})
 	}
 }
-
