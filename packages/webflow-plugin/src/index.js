@@ -45,7 +45,7 @@ module.exports = function webflowPlugin(){
 	let excludeFromSitemap = []
 
 	return function(){
-		
+
 		// Parse CSS for webp images
 		if(useWebp){
 			this.on(`parseCss`, async ({ data }) => {
@@ -146,7 +146,7 @@ module.exports = function webflowPlugin(){
 		this.on(`writeFile`, async obj => {
 			const dist = this.dist
 			let { outputPath } = obj
-			
+
 			// Split path into parts
 			const parts = outputPath.replace(dist, ``).split(`/`)
 			const name = parts.pop()
@@ -208,8 +208,8 @@ module.exports = function webflowPlugin(){
 				console.error(err)
 				// process.exit(1)
 			})
-			
-			
+
+
 
 			// Create robots.txt if it doesn't exist
 			const newRobotsTxt = replaceRobotsTxt || !(await exists(join(dist, `robots.txt`)))
@@ -237,7 +237,7 @@ module.exports = function webflowPlugin(){
 
 				// Create webp images
 				console.log(`Creating webp images...`)
-				const images = await globby(`${dist}/**/*.{jpg,jpeg,png,gif}`)
+				const images = await globby(`${dist}/**/*.{jpg,jpeg,png,gif,JPG,JPEG,PNG,GIF}`)
 				for(let file of images){
 					const newPath = file + `.webp`
 					await webp.cwebp(file, newPath, `-q 90`)
@@ -265,25 +265,91 @@ module.exports = function webflowPlugin(){
 					const link = $url.find(`xhtml\\:link`);
 					// Sept. 4, 2023: Update Sitemap URL
 					let url = loc.text().trim(); // Use let instead of const
-					// Force update for the first item
-					if ($url.index() === 0) {
-						// Update both the <loc> content and the href attribute directly
-						loc.text(process.env.URL);
-						link.attr('href', process.env.URL);
+
+					const webflowUrlWithoutSlash = process.env.WEBFLOW_URL.replace(/\/$/, '');
+					console.log('Original URL:', url);
+					console.log('WEBFLOW_URL:', process.env.WEBFLOW_URL);
+					console.log('Updated URL:', process.env.URL);
+					// REPLACE WEBFLOW URL WITH Official URL
+					// url = url.replace(process.env.WEBFLOW_URL, process.env.URL);
+					// Check if the original URL is equal to the Webflow URL
+					if (url === webflowUrlWithoutSlash) {
+						// Force update to use the updated URL
+						url = process.env.URL;
 					} else {
-						// REPLACE WEBFLOW URL WITH Official URL
+						// Update the URL by replacing the Webflow URL with the updated URL
 						url = url.replace(process.env.WEBFLOW_URL, process.env.URL);
-						if (excludeFromSitemap.indexOf(url) > -1) {
-							$url.remove();
-						}
-						// Update both the <loc> content and the href attribute
-						loc.text(url);
-						link.attr('href', url);
 					}
+					
+					console.log('Final URL:', url);
+					if (excludeFromSitemap.indexOf(url) > -1) {
+					  $url.remove();
+					}
+					// Update both the <loc> content and the href attribute
+					loc.text(url);
+					link.attr('href', url);
 				});
-				const newXml = $.xml()
-				console.log(`Writing new Sitemap...`)
-				await outputFile(xmlPath, newXml)
+
+				
+				const additionalUrls = [];
+
+				// Load Collection IDs from Vercel Environment Variable
+				const COLLECTION_IDS = process.env.WEBFLOW_COLLECTION_IDS
+				    ? process.env.WEBFLOW_COLLECTION_IDS.split(",") // Convert to array
+				    : [];
+				
+				const API_KEY = process.env.WEBFLOW_API_KEY;
+				const API_BASE = "https://api.webflow.com/v2/collections/";
+				
+				// Check if API_KEY, COLLECTION_IDS, and URL are set before running
+				if (!API_KEY || !COLLECTION_IDS.length || !process.env.URL) {
+				    console.error("Missing required environment variables. Ensure WEBFLOW_API_KEY, WEBFLOW_COLLECTION_IDS, and URL are set.");
+				    process.exit(1);
+				}
+
+				
+				async function fetchBlogPosts() {
+				    for (const id of COLLECTION_IDS) {
+				        try {
+				            const collectionRes = await fetch(`${API_BASE}${id}`, {
+				                headers: { "Authorization": `Bearer ${API_KEY}`, "accept-version": "2.0.0" }
+				            });
+				            const collectionData = await collectionRes.json();
+				            const collectionSlug = collectionData.slug || "unknown-collection";
+				
+				            const res = await fetch(`${API_BASE}${id}/items`, {
+				                headers: { "Authorization": `Bearer ${API_KEY}`, "accept-version": "2.0.0" }
+				            });
+				            const data = await res.json();
+				
+				            data.items?.forEach(item => {
+				                const slug = item.fieldData?.slug;
+				                if (slug) additionalUrls.push(`${process.env.URL}${collectionSlug}/${slug}`);
+				            });
+				
+				        } catch (error) {
+				            console.error(`Error fetching collection ${id}:`, error);
+				        }
+				    }
+				    console.log("✅ All Blog URLs:", additionalUrls);
+				}
+				
+				// Run the function
+				await fetchBlogPosts();
+
+
+
+
+				// Add additional URLs to the sitemap
+				additionalUrls.forEach(url => {
+					const $urlNode = $(`<url></url>`);
+					$urlNode.append(`<loc>${url}</loc>`);
+					$('urlset').append($urlNode);
+				});
+
+				const newXml = $.xml();
+				console.log(`Writing updated Sitemap with all URLs...`);
+				await outputFile(xmlPath, newXml);
 			}
 
 
