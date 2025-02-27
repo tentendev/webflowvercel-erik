@@ -8,6 +8,8 @@ Make sure you have 2 environment variables set:
 
 - `URL`: The destination URL
 - `WEBFLOW_URL`: The original source URL to be scraped
+- `WEBFLOW_COLLECTION_IDS`: The list of Webflow CMS collections. (comma separated)
+- `WEBFLOW_API_KEY`: The API key from the source webflow site
 
 To do this, you can create a `.env` file with the contents of `.env.template`. and fill in the variables.
 
